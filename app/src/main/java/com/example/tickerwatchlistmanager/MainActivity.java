@@ -5,8 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.widget.Toast;
@@ -17,14 +20,21 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private SmsReceiver smsReceiver;
     private TickerListFragment tickerListFragment;
+    private InfoWebFragment infoWebFragment;
     private static final int SMS_PERMISSION_REQUEST_CODE = 123;
-    private void loadTickerListFragment() {
-        tickerListFragment = new TickerListFragment(); // Assign to class variable
+    private void loadLandscapeFragment() {
+        tickerListFragment = new TickerListFragment();
+        infoWebFragment = new InfoWebFragment();// Assign to class variable
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.containerTickerList, tickerListFragment) // Use the class variable here
-                .replace(R.id.containerInfoWeb, new InfoWebFragment())
+                .replace(R.id.containerInfoWeb, infoWebFragment)
                 .commit();
 
+    }
+    private void loadPortraitFragment() {
+        tickerListFragment = new TickerListFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.containerTickerList, tickerListFragment).commit();
     }
 
     /*
@@ -37,8 +47,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);//creates ui
         if (!isSmsPermissionGranted()) {
             requestSmsPermission();}
-
-        loadTickerListFragment();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            loadLandscapeFragment();
+        } else {
+            loadPortraitFragment();
+        }
         smsReceiver = new SmsReceiver(tickerListFragment);//creates obj
         IntentFilter intentFilter = new IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);//creates obj
         registerReceiver(smsReceiver, intentFilter);//registers the receiver to intent
@@ -76,13 +89,18 @@ Loads fragment with ticker parameter
 @param String
  */
     public void loadInfoWebFragment(String ticker) {
-        InfoWebFragment infoWebFragment = (InfoWebFragment) getSupportFragmentManager().findFragmentById(R.id.containerInfoWeb); //creates obj
-        if (infoWebFragment == null || !infoWebFragment.isVisible()) {
-            infoWebFragment = new InfoWebFragment();
-        }//qc
-        infoWebFragment.loadWebsiteForTicker(ticker);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.containerInfoWeb, infoWebFragment)
-                .commit();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://seekingalpha.com/symbol/" + ticker));
+            startActivity(intent);
+        }else{
+            InfoWebFragment infoWebFragment = (InfoWebFragment) getSupportFragmentManager().findFragmentById(R.id.containerInfoWeb); //creates obj
+            if (infoWebFragment == null || !infoWebFragment.isVisible()) {
+                infoWebFragment = new InfoWebFragment();
+            }//qc
+            infoWebFragment.loadWebsiteForTicker(ticker);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.containerInfoWeb, infoWebFragment)
+                    .commit();
+        }
     }
 }
