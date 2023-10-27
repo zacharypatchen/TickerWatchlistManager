@@ -40,8 +40,8 @@ public class TickerListAdapter extends RecyclerView.Adapter<TickerListAdapter.Ti
     }
     public void addTickers(List<String> tickers){
         for(String t : this.tickers){
-                tickers.add(t);
-                 //notifyDataSetChanged();
+            tickers.add(t);
+            //notifyDataSetChanged();
         }
         tickers.remove(6);
         this.tickers = tickers;
@@ -64,4 +64,3 @@ public class TickerListAdapter extends RecyclerView.Adapter<TickerListAdapter.Ti
         }
     }
 }
-

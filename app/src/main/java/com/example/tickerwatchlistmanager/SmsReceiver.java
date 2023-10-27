@@ -6,13 +6,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+
 public class SmsReceiver extends BroadcastReceiver {
+    boolean charError;
     private TickerListFragment tickerListFragment;
     public SmsReceiver(TickerListFragment tickerListFragment) {
         this.tickerListFragment = tickerListFragment;
@@ -26,8 +30,19 @@ public class SmsReceiver extends BroadcastReceiver {
                 if (pdus != null) {
                     for (Object pdu : pdus) {
                         SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdu);
-                        String messageBody = smsMessage.getMessageBody();
-                        extractTickerSymbols(messageBody);
+                        String messageBody = smsMessage.getMessageBody().toUpperCase();
+                        for(char s : messageBody.toCharArray()){
+                            if(!Character.isLetter(s)){
+                                charError = true;
+                            }
+                        }
+                        if(!charError){
+                            extractTickerSymbols(messageBody);
+                        }else{
+                            Toast.makeText(context, "Not a ticker", Toast.LENGTH_SHORT).show();
+                            charError = false;
+                        }
+
                     }
                 }
             }
@@ -56,4 +71,3 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
 }
-
